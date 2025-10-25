@@ -62,6 +62,21 @@ namespace GalFingerPrint.Server
             builder.Services.AddScoped<IQueryHashService, QueryHashService>();
 
             var app = builder.Build();
+            
+            // DataBase Migration
+            using (IServiceScope scope = app.Services.CreateScope())
+            {
+                try
+                {
+                    scope.ServiceProvider.GetRequiredService<GalDbContext>().Database.Migrate();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Failed to migrate database:\n{e.Message}{e.StackTrace}");
+                    return;
+                }
+            
+            }
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
