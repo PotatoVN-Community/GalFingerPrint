@@ -71,6 +71,8 @@ namespace GalFingerPrint.Server
             }
 
             app.UseHttpsRedirection();
+            
+            app.UseForwardedHeaders();
 
             app.UseAuthorization();
 
