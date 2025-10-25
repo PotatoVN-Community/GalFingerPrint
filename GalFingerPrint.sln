@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36401.2 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalFingerPrint.Server", "GalFingerPrint.Server\GalFingerPrint.Server.csproj", "{04435CB7-EA98-4E07-AADA-7DB7C5D4E8ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalFingerPrint.Tests", "GalFingerPrint.Tests\GalFingerPrint.Tests.csproj", "{A0968240-DAEF-43E4-9DFA-876A5B8D9E9B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{04435CB7-EA98-4E07-AADA-7DB7C5D4E8ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04435CB7-EA98-4E07-AADA-7DB7C5D4E8ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04435CB7-EA98-4E07-AADA-7DB7C5D4E8ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04435CB7-EA98-4E07-AADA-7DB7C5D4E8ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0968240-DAEF-43E4-9DFA-876A5B8D9E9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0968240-DAEF-43E4-9DFA-876A5B8D9E9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0968240-DAEF-43E4-9DFA-876A5B8D9E9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0968240-DAEF-43E4-9DFA-876A5B8D9E9B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E7171D69-34E2-4632-BB5E-B934BE32B80D}
+	EndGlobalSection
+EndGlobal
