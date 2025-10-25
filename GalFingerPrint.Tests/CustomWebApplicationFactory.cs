@@ -21,6 +21,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Server.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseSetting("DB_CONNECTION_STRING", "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=tests");
         builder.ConfigureServices(services =>
         {
             // 移除已注册的 Npgsql 上下文

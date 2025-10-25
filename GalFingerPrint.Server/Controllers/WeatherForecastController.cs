@@ -1,3 +1,4 @@
+using GalFingerPrint.Server.Helper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GalFingerPrint.Server.Controllers
@@ -32,5 +33,10 @@ namespace GalFingerPrint.Server.Controllers
             })
             .ToArray();
         }
+
+        /// <summary>获取客户端IP地址</summary>
+        /// <response code="200">返回客户端ip</response>
+        [HttpGet("GetIp")]
+        public string GetIp() => this.GetClientIp();
     }
 }

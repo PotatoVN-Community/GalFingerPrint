@@ -1,0 +1,56 @@
+name: Build and Push Image
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore GalFingerPrint.Server/GalFingerPrint.Server.csproj
+
+      - name: Build application
+        run: dotnet build GalFingerPrint.Server/GalFingerPrint.Server.csproj --configuration Release --no-restore
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            # 为推送到 main 分支的镜像打上 latest 标签
+            type=raw,value=latest,enable={{is_default_branch}}
+            # 为每次 commit 打上 SHA 标签，用于精确追溯
+            type=sha
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: GalFingerPrint.Server/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }} # 使用 metadata action 生成的标签
+          labels: ${{ steps.meta.outputs.labels }} # 附加推荐的元数据标签

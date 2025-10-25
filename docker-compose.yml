@@ -1,0 +1,32 @@
+services:
+  GalFingerPrint_MAIN:
+    image: ghcr.io/potatovn-community/galfingerprint:latest-dev
+    container_name: galfingerprint-server
+    environment:
+      - DB_CONNECTION_STRING=Host=GalFingerPrint_DB;Port=5432;Database=galfingerprint;Username=postgres;Password=postgres;Include Error Detail=true
+      - ASPNETCORE_URLS=http://+:8080
+      - ASPNETCORE_ENVIRONMENT=Production
+      # 如果要使用反向代理，请配置以下变量
+      #- REVERSE_PROXY_IP=192.168.114.51  #反向代理IP地址
+      #- REVERSE_PROXY_IP_RANGE=24        #反向代理所在子网掩码
+    ports:
+      - "8080:8080"
+    depends_on:
+      - GalFingerPrint_DB
+  GalFingerPrint_DB:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_GalFingerPrint_DB: galfingerprint
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

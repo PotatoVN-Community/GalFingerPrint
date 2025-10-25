@@ -1,3 +1,4 @@
+using GalFingerPrint.Server.Helper;
 using GalFingerPrint.Server.Models;
 using GalFingerPrint.Server.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -13,15 +14,6 @@ public class VoteController(IVoteService voteService) : ControllerBase
         public List<string> Hashes { get; set; } = [];
     }
 
-    private string GetClientIp()
-    {
-        var forwarded = Request.Headers["X-Forwarded-For"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(forwarded))
-            return forwarded.Split(',')[0].Trim();
-        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-        return string.IsNullOrWhiteSpace(ip) ? "127.0.0.1" : ip;
-    }
-
     /// <summary>提交或更新当前 IP 对指定游戏的哈希投票</summary>
     /// <remarks>会根据新的哈希集合自动增减数据库中记录的计数，确保每个 IP 对每个游戏仅保留一份投票</remarks>
     /// <response code="204">投票提交成功</response>
@@ -30,7 +22,7 @@ public class VoteController(IVoteService voteService) : ControllerBase
     public async Task<IActionResult> PatchVote([FromRoute] string vndbId, [FromBody] VotePatchRequest req, CancellationToken ct)
     {
         if (req?.Hashes is null) return BadRequest("缺少 hashes");
-        var ip = GetClientIp();
+        var ip = this.GetClientIp();
         var dto = new VoteUpdateDto { VndbId = vndbId, Hashes = req.Hashes };
         await voteService.SubmitVoteAsync(ip, dto, ct);
         return NoContent();
@@ -40,9 +32,11 @@ public class VoteController(IVoteService voteService) : ControllerBase
     /// <remarks>根据请求来源 IP 地址返回用户曾经提交的游戏哈希投票记录</remarks>
     /// <response code="200">返回投票分页数据</response>
     [HttpGet]
-    public async Task<ActionResult<VoteQueryResponseDto>> GetVotes([FromQuery] int page = 1, [FromQuery] int pageSize = 10, CancellationToken ct = default)
+    public async Task<ActionResult<VoteQueryResponseDto>> GetVotes([FromQuery] int page = 1,
+        [FromQuery] int pageSize = 10, CancellationToken ct = default)
+
     {
-        var ip = GetClientIp();
+        var ip = this.GetClientIp();
         var (items, total) = await voteService.QueryVotesAsync(ip, page, pageSize, ct);
         var response = new VoteQueryResponseDto
         {
