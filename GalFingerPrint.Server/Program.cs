@@ -26,9 +26,11 @@ namespace GalFingerPrint.Server
             builder.Services.AddScoped<IHashRepository, HashRepository>();
             builder.Services.AddScoped<IGalgameHashRepository, GalgameHashRepository>();
             builder.Services.AddScoped<IVoteRepository, VoteRepository>();
+            builder.Services.AddScoped<IGameQueryRepository, GameQueryRepository>();
 
             // Services
             builder.Services.AddScoped<IVoteService, VoteService>();
+            builder.Services.AddScoped<IQueryHashService, QueryHashService>();
 
             var app = builder.Build();
 
