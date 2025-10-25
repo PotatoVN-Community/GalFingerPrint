@@ -25,3 +25,12 @@ public class VoteDto
     public string VndbId { get; set; } = string.Empty;
     public List<string> Hashes { get; set; } = [];
 }
+
+public class VoteQueryResponseDto
+{
+    public List<VoteDto> Items { get; set; } = [];
+    public int Total { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public string Ip { get; set; } = string.Empty;
+}

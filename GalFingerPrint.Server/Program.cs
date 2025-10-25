@@ -1,8 +1,8 @@
 namespace GalFingerPrint.Server
 {
-    using GalFingerPrint.Server.Data;
-    using GalFingerPrint.Server.Repositories;
-    using GalFingerPrint.Server.Services;
+    using Data;
+    using Repositories;
+    using Services;
     using Microsoft.EntityFrameworkCore;
 
     public class Program
@@ -14,12 +14,14 @@ namespace GalFingerPrint.Server
             // Add services to the container.
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "GalFingerPrint.Server.xml"));
+            });
 
             // DbContext (PostgreSQL)
             var connStr = builder.Configuration.GetConnectionString("Default");
-            builder.Services.AddDbContext<GalDbContext>(options =>
-                options.UseNpgsql(connStr));
+            builder.Services.AddDbContext<GalDbContext>(options => options.UseNpgsql(connStr));
 
             // Repositories
             builder.Services.AddScoped<IGalgameRepository, GalgameRepository>();

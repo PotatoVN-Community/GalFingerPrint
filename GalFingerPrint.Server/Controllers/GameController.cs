@@ -10,6 +10,11 @@ namespace GalFingerPrint.Server.Controllers;
 [Route("game")]
 public class GameController(IQueryHashService queryHashService) : ControllerBase
 {
+    /// <summary>根据文件哈希列表推断最可能的游戏</summary>
+    /// <remarks>对每个哈希挑选计数最高的游戏，再从所有命中的游戏中选出出现次数最多且票数最高者作为结果</remarks>
+    /// <response code="200">成功返回匹配到的游戏</response>
+    /// <response code="400">缺少有效的哈希输入</response>
+    /// <response code="404">没有找到匹配的游戏</response>
     [HttpPost("byhash")]
     public async Task<ActionResult<QueryHashResultDto>> QueryByHash([FromBody] QueryHashDto? request, CancellationToken ct)
     {

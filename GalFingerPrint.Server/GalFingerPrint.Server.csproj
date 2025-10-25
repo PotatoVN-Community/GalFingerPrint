@@ -6,6 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>ec383c8b-b8e3-43b5-98b4-3a350e144eed</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <!--xml文档生成-->
+    <NoWarn>CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>  
   </PropertyGroup>
 
   <ItemGroup>

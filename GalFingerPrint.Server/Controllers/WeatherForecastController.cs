@@ -18,6 +18,9 @@ namespace GalFingerPrint.Server.Controllers
             _logger = logger;
         }
 
+        /// <summary>获取示例天气预报数据</summary>
+        /// <remarks>该接口返回一组随机生成的天气数据，主要用于演示用途</remarks>
+        /// <response code="200">成功返回天气预报列表</response>
         [HttpGet(Name = "GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {

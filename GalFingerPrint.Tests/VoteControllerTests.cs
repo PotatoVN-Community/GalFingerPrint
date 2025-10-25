@@ -29,12 +29,12 @@ public class VoteControllerTests(CustomWebApplicationFactory factory) : IClassFi
         var resp1 = await client.SendAsync(req1);
         resp1.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var page1 = await client.GetFromJsonAsync<VoteQueryResponse>("/vote?page=1&pageSize=10");
+    var page1 = await client.GetFromJsonAsync<VoteQueryResponseDto>("/vote?page=1&pageSize=10");
         page1.Should().NotBeNull();
-        page1!.total.Should().Be(1);
-        page1.items.Should().HaveCount(1);
-        page1.items[0].VndbId.Should().Be(vndb);
-        page1.items[0].Hashes.Should().BeEquivalentTo(new[] { "h1", "h2" });
+    page1!.Total.Should().Be(1);
+    page1.Items.Should().HaveCount(1);
+    page1.Items[0].VndbId.Should().Be(vndb);
+    page1.Items[0].Hashes.Should().BeEquivalentTo(new[] { "h1", "h2" });
 
         // DB asserts: counts
         using (var scope = factory.Services.CreateScope())
@@ -102,18 +102,10 @@ public class VoteControllerTests(CustomWebApplicationFactory factory) : IClassFi
         var resp4 = await client.SendAsync(req4);
         resp4.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
-        var pageSize1 = await client.GetFromJsonAsync<VoteQueryResponse>("/vote?page=1&pageSize=1");
-        pageSize1!.total.Should().Be(2);
-        pageSize1.items.Should().HaveCount(1);
-        var pageSize2 = await client.GetFromJsonAsync<VoteQueryResponse>("/vote?page=2&pageSize=1");
-        pageSize2!.items.Should().HaveCount(1);
-    }
-
-    private class VoteQueryResponse
-    {
-        public List<VoteDto> items { get; set; } = new();
-        public int total { get; set; }
-        public int page { get; set; }
-        public int pageSize { get; set; }
+        var pageSize1 = await client.GetFromJsonAsync<VoteQueryResponseDto>("/vote?page=1&pageSize=1");
+        pageSize1!.Total.Should().Be(2);
+        pageSize1.Items.Should().HaveCount(1);
+        var pageSize2 = await client.GetFromJsonAsync<VoteQueryResponseDto>("/vote?page=2&pageSize=1");
+        pageSize2!.Items.Should().HaveCount(1);
     }
 }
