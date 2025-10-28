@@ -42,13 +42,10 @@ jobs:
         run: dotnet build GalFingerPrint.Server/GalFingerPrint.Server.csproj --configuration Release --no-restore
 
       - name: Install Swagger CLI
-        run: |
-          dotnet tool install --global Swashbuckle.AspNetCore.Cli
-          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+        run: dotnet tool install --tool-path ./.dotnet-tools Swashbuckle.AspNetCore.Cli
 
       - name: Generate OpenAPI document
-        working-directory: GalFingerPrint.Server
-        run: dotnet swagger tofile --output openapi.json bin/Release/net8.0/GalFingerPrint.Server.dll v1
+        run: ./.dotnet-tools/dotnet-swagger tofile --output GalFingerPrint.Server/openapi.json GalFingerPrint.Server/bin/Release/net8.0/GalFingerPrint.Server.dll v1
 
       - name: Upload OpenAPI artifact
         uses: actions/upload-artifact@v4
