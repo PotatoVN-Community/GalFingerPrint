@@ -45,7 +45,7 @@ jobs:
         run: dotnet tool install --tool-path ./.dotnet-tools Swashbuckle.AspNetCore.Cli
 
       - name: Generate OpenAPI document
-        run: ./.dotnet-tools/dotnet-swagger tofile --output GalFingerPrint.Server/openapi.json GalFingerPrint.Server/bin/Release/net8.0/GalFingerPrint.Server.dll v1
+        run: ./.dotnet-tools/swagger tofile --output GalFingerPrint.Server/openapi.json GalFingerPrint.Server/bin/Release/net8.0/GalFingerPrint.Server.dll v1
 
       - name: Upload OpenAPI artifact
         uses: actions/upload-artifact@v4
