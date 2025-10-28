@@ -120,10 +120,10 @@ jobs:
           fi
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore Client.CSharp/src/GalFingerPrint.Client/GalFingerPrint.Client.csproj
 
       - name: Build
-        run: dotnet build Client.CSharp/src/GalFingerPrint.Client/GalFingerPrint.Client.csproj -c Release --no-restore
+        run: dotnet build Client.CSharp/src/GalFingerPrint.Client/GalFingerPrint.Client.csproj -c Release
 
       - name: Pack
         run: |
