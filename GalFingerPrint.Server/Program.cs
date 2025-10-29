@@ -88,6 +88,8 @@ namespace GalFingerPrint.Server
             app.UseHttpsRedirection();
             
             app.UseForwardedHeaders();
+            
+            app.UseCors("AllowAll");
 
             app.UseAuthorization();
 
