@@ -193,6 +193,11 @@ function removeFile(id: string) {
   uploadedFiles.value = uploadedFiles.value.filter((item) => item.id !== id)
 }
 
+function clearFiles() {
+  uploadedFiles.value = []
+  recognizeError.value = null
+}
+
 async function computeSha256(file: File) {
   const buffer = await file.arrayBuffer()
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer)
@@ -398,10 +403,20 @@ function formatSize(bytes: number) {
         </ul>
         <p v-else class="panel-placeholder">尚未添加任何文件</p>
 
-        <button class="primary" type="button" :disabled="!canRecognize" @click="recognize">
-          <span v-if="recognizing">识别中...</span>
-          <span v-else>识别</span>
-        </button>
+        <div class="panel-actions">
+          <button class="primary" type="button" :disabled="!canRecognize" @click="recognize">
+            <span v-if="recognizing">识别中...</span>
+            <span v-else>识别</span>
+          </button>
+          <button
+            class="secondary"
+            type="button"
+            :disabled="!uploadedFiles.length || recognizing"
+            @click="clearFiles"
+          >
+            清空
+          </button>
+        </div>
         <p v-if="recognizeError" class="error feedback">{{ recognizeError }}</p>
       </section>
 
@@ -647,6 +662,12 @@ function formatSize(bytes: number) {
 .placeholder {
   opacity: 0.7;
   font-size: 0.9rem;
+}
+
+.panel-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .primary,

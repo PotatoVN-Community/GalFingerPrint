@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'GalFingerPrint.Server/**'
+      - 'GalFingerPrint.Server.*'
+      - 'GalFingerPrint.sln'
+      - 'docker-compose.yml'
+      - '.github/workflows/docker-publish.yml'
   workflow_dispatch:
 
 permissions:

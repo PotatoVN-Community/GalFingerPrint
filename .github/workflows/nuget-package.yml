@@ -4,9 +4,19 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'GalFingerPrint.Server/**'
+      - 'GalFingerPrint.Server.*'
+      - 'GalFingerPrint.sln'
+      - '.github/workflows/nuget-package.yml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'GalFingerPrint.Server/**'
+      - 'GalFingerPrint.Server.*'
+      - 'GalFingerPrint.sln'
+      - '.github/workflows/nuget-package.yml'
   workflow_dispatch:
 
 jobs:
