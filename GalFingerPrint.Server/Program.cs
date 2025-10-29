@@ -48,6 +48,17 @@ namespace GalFingerPrint.Server
                     throw new InvalidOperationException("REVERSE_PROXY_IP_RANGE must be a valid number.");
                 options.KnownNetworks.Add(new IPNetwork(IPAddress.Parse(ip), prefixLength));
             });
+            
+            // CORS
+            builder.Services.AddCors(x =>
+            {
+                x.AddPolicy("AllowAll", corsPolicyBuilder =>
+                {
+                    corsPolicyBuilder.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+                });
+            });
 
 
             // Repositories
