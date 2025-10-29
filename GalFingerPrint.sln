@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalFingerPrint.Server", "Ga
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GalFingerPrint.Tests", "GalFingerPrint.Tests\GalFingerPrint.Tests.csproj", "{A0968240-DAEF-43E4-9DFA-876A5B8D9E9B}"
 EndProject
-Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "galfingerprint.web", "GalFingerPrint.Web\galfingerprint.web.esproj", "{420AD8DC-8EAB-9A9B-C4D3-07F3994F05F0}"
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "galfingerprint.web", "galfingerprint.web\galfingerprint.web.esproj", "{420AD8DC-8EAB-9A9B-C4D3-07F3994F05F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
