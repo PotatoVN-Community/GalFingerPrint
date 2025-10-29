@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { sha256 } from '@noble/hashes/sha256'
+import { bytesToHex } from '@noble/hashes/utils'
 
 type UploadStatus = 'hashing' | 'done' | 'error'
 
@@ -37,8 +39,6 @@ const vndbId = ref<string | null>(null)
 const vndbLoading = ref(false)
 const vndbError = ref<string | null>(null)
 const vndbData = ref<VndbGame | null>(null)
-
-const hashSupported = computed(() => typeof window !== 'undefined' && !!window.crypto?.subtle)
 
 if (typeof window !== 'undefined') {
   const saved = window.localStorage.getItem(storageKey)
@@ -164,13 +164,6 @@ function addFile(file: File) {
     return
   }
 
-  if (!hashSupported.value) {
-    entry.status = 'error'
-    entry.error = '当前环境不支持 SHA-256 计算'
-    updateEntry(entry)
-    return
-  }
-
   computeSha256(file)
     .then((hash) => {
       entry.hash = hash
@@ -200,9 +193,19 @@ function clearFiles() {
 
 async function computeSha256(file: File) {
   const buffer = await file.arrayBuffer()
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
+  const subtle = typeof crypto !== 'undefined' ? crypto.subtle : undefined
+
+  if (subtle?.digest) {
+    try {
+      const hashBuffer = await subtle.digest('SHA-256', buffer)
+      return bytesToHex(new Uint8Array(hashBuffer))
+    } catch (error) {
+      console.warn('crypto.subtle.digest failed, falling back to JS SHA-256', error)
+    }
+  }
+
+  const hashBytes = sha256(new Uint8Array(buffer))
+  return bytesToHex(hashBytes)
 }
 
 function buildEndpoint(path: string) {
@@ -375,8 +378,7 @@ function formatSize(bytes: number) {
           @dragleave.prevent="onDragLeave"
           @drop="onDrop"
         >
-          <p v-if="hashSupported">拖放 .exe 文件到此区域</p>
-          <p v-else class="error">当前浏览器不支持 SHA-256 计算</p>
+          <p>拖放 .exe 文件到此区域</p>
           <p class="or">或</p>
           <label class="file-picker">
             选择文件
