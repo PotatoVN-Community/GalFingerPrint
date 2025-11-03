@@ -1,3 +1,4 @@
+using System;
 using System.Data.Common;
 using GalFingerPrint.Server.Data;
 using Microsoft.AspNetCore.Hosting;
@@ -14,6 +15,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Server.Program>
 
     public CustomWebApplicationFactory()
     {
+        // Ensure DB_CONNECTION_STRING exists early for Program.EnsureRequiredEnvironment
+        Environment.SetEnvironmentVariable("DB_CONNECTION_STRING", "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=tests");
+        // Tell the app to skip EF migrations in tests to avoid conflicts between EnsureCreated() and Migrate()
+        Environment.SetEnvironmentVariable("SKIP_MIGRATIONS", "1");
         var sqlite = new SqliteConnection("DataSource=:memory:;Cache=Shared");
         sqlite.Open();
         _connection = sqlite;
@@ -21,6 +26,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Server.Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        // Configure test host to use sqlite in-memory and propagate a fake DB connection string via UseSetting.
         builder.UseSetting("DB_CONNECTION_STRING", "Host=localhost;Port=5432;Username=postgres;Password=postgres;Database=tests");
         builder.ConfigureServices(services =>
         {

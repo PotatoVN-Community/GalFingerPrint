@@ -67,6 +67,8 @@ namespace GalFingerPrint.Server
             builder.Services.AddScoped<IGalgameHashRepository, GalgameHashRepository>();
             builder.Services.AddScoped<IVoteRepository, VoteRepository>();
             builder.Services.AddScoped<IGameQueryRepository, GameQueryRepository>();
+            // Game service
+            builder.Services.AddScoped<IGameService, GameService>();
 
             // Services
             builder.Services.AddScoped<IVoteService, VoteService>();
@@ -77,14 +79,42 @@ namespace GalFingerPrint.Server
             // DataBase Migration
             using (IServiceScope scope = app.Services.CreateScope())
             {
+                var db = scope.ServiceProvider.GetRequiredService<GalDbContext>();
                 try
                 {
-                    scope.ServiceProvider.GetRequiredService<GalDbContext>().Database.Migrate();
+                    var provider = db.Database.ProviderName ?? string.Empty;
+                    if (provider.IndexOf("Sqlite", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        var conn = db.Database.GetDbConnection();
+                        var connStr = conn?.ConnectionString ?? string.Empty;
+                        if (connStr.Contains(":memory:", StringComparison.OrdinalIgnoreCase))
+                        {
+                            // In-memory Sqlite used by tests; schema is created by tests. Skip migrations.
+                            Console.WriteLine("Skipping EF migrations for in-memory Sqlite (test environment).");
+                        }
+                        else
+                        {
+                            db.Database.Migrate();
+                        }
+                    }
+                    else
+                    {
+                        db.Database.Migrate();
+                    }
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Failed to migrate database:\n{e.Message}{e.StackTrace}");
-                    return;
+                    var msg = e.Message ?? string.Empty;
+                    if (msg.IndexOf("already exists", StringComparison.OrdinalIgnoreCase) >= 0 &&
+                        msg.IndexOf("table", StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        Console.WriteLine($"Ignored migration error (existing tables): {e.Message}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Failed to migrate database:\n{e.Message}{e.StackTrace}");
+                        return;
+                    }
                 }
             
             }

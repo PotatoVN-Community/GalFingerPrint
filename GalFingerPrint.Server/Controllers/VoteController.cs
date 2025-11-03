@@ -34,7 +34,6 @@ public class VoteController(IVoteService voteService) : ControllerBase
     [HttpGet]
     public async Task<ActionResult<VoteQueryResponseDto>> GetVotes([FromQuery] int page = 1,
         [FromQuery] int pageSize = 10, CancellationToken ct = default)
-
     {
         var ip = this.GetClientIp();
         var (items, total) = await voteService.QueryVotesAsync(ip, page, pageSize, ct);
