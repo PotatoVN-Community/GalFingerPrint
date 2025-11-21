@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -49,6 +49,9 @@ const recordedLoading = ref(false)
 const recordedError = ref<string | null>(null)
 const recordedPage = ref(1)
 const recordedPageSize = ref(40)
+const recordedTotal = ref(0)
+
+const totalPages = computed(() => Math.ceil(recordedTotal.value / recordedPageSize.value))
 
 const selectedGame = ref<{
   vndbId: string
@@ -87,6 +90,7 @@ async function loadRecordedGames(page = recordedPage.value, pageSize = recordedP
       return
     }
     const payload = (await resp.json()) as { items?: Array<{ vndbId?: string }>; total?: number }
+    recordedTotal.value = payload.total ?? 0
     const items = payload.items ?? []
     recordedGames.value = items.map((i) => ({
       vndbId: i.vndbId ?? '',
@@ -117,27 +121,62 @@ async function fetchVndbOverview(g: RecordedGame) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         filters: ['id', '=', g.vndbId],
-        fields: 'title,image.url',
+        fields: 'title,image.url,image.sexual,image.violence',
       }),
     })
     if (!response.ok) {
       g.error = `VNDB 请求失败：${response.status}`
       return
     }
-    const payload = (await response.json()) as { results?: Array<{ title?: string; image?: { url?: string | null } | null }> }
+    const payload = (await response.json()) as {
+      results?: Array<{
+        title?: string
+        image?: { url?: string | null; sexual?: number; violence?: number } | null
+      }>
+    }
     const result = payload.results?.[0]
     if (!result) {
       g.error = 'VNDB 未返回结果'
       return
     }
     g.title = result.title ?? g.vndbId
-    g.imageUrl = result.image?.url ?? undefined
+
+    // 检查主图是否安全 (sexual=0, violence=0)
+    let safeImageUrl = undefined
+    if (result.image?.url && (result.image.sexual ?? 0) === 0 && (result.image.violence ?? 0) === 0) {
+      safeImageUrl = result.image.url
+    } else {
+      // 如果主图不安全，尝试查找其他安全图片
+      try {
+        const imgResp = await fetch('https://api.vndb.org/kana/image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filters: ['vn', '=', ['id', '=', g.vndbId], 'sexual', '=', 0, 'violence', '=', 0],
+            fields: 'url,votecount',
+            sort: 'votecount',
+            reverse: true,
+            results: 1,
+          }),
+        })
+        if (imgResp.ok) {
+          const imgPayload = (await imgResp.json()) as { results?: Array<{ url?: string }> }
+          if (imgPayload.results?.[0]?.url) {
+            safeImageUrl = imgPayload.results[0].url
+          }
+        }
+      } catch {
+        // 忽略图片查询错误，使用默认无图状态
+      }
+    }
+
+    g.imageUrl = safeImageUrl
     g.details = {
       title: result.title ?? g.vndbId,
       description: null,
       developers: [],
       released: null,
-      imageUrl: result.image?.url ?? null,
+      imageUrl: safeImageUrl ?? null,
     }
   } catch (err) {
     g.error = `VNDB 请求异常：${(err as Error).message}`
@@ -179,19 +218,46 @@ async function openGameDetails(vndbIdStr: string) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           filters: ['id', '=', vndbIdStr],
-          fields: 'title,description,image.url,released,developers.name',
+          fields: 'title,description,image.url,image.sexual,image.violence,released,developers.name',
         }),
       })
       if (response.ok) {
         const payload = (await response.json()) as { results?: Array<any> }
         const r = payload.results?.[0]
         if (r) {
+          let safeImageUrl = undefined
+          if (r.image?.url && (r.image.sexual ?? 0) === 0 && (r.image.violence ?? 0) === 0) {
+            safeImageUrl = r.image.url
+          } else {
+            try {
+              const imgResp = await fetch('https://api.vndb.org/kana/image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  filters: ['vn', '=', ['id', '=', vndbIdStr], 'sexual', '=', 0, 'violence', '=', 0],
+                  fields: 'url,votecount',
+                  sort: 'votecount',
+                  reverse: true,
+                  results: 1,
+                }),
+              })
+              if (imgResp.ok) {
+                const imgPayload = (await imgResp.json()) as { results?: Array<{ url?: string }> }
+                if (imgPayload.results?.[0]?.url) {
+                  safeImageUrl = imgPayload.results[0].url
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
+
           selectedGame.value!.vndbData = {
             title: r.title ?? vndbIdStr,
             description: sanitizeDescription(r.description ?? null),
             developers: (r.developers ?? []).map((d: any) => d?.name).filter((n: any) => Boolean(n)),
             released: r.released ?? null,
-            imageUrl: r.image?.url ?? null,
+            imageUrl: safeImageUrl ?? null,
           }
         }
       }
@@ -221,6 +287,13 @@ function closeSelectedGame() {
 
 function goBack() {
   router.push('/')
+}
+
+function changePage(newPage: number) {
+  if (newPage < 1 || newPage > totalPages.value) return
+  recordedPage.value = newPage
+  loadRecordedGames()
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 </script>
 
@@ -253,6 +326,27 @@ function goBack() {
           </div>
           <div class="poster-caption">{{ g.title }}</div>
         </div>
+      </div>
+      <div v-if="totalPages > 1" class="pagination">
+        <button
+          class="page-button"
+          :disabled="recordedPage === 1"
+          @click="changePage(recordedPage - 1)"
+          type="button"
+        >
+          ‹ 上一页
+        </button>
+        <span class="page-info">
+          第 {{ recordedPage }} 页 / 共 {{ totalPages }} 页
+        </span>
+        <button
+          class="page-button"
+          :disabled="recordedPage === totalPages"
+          @click="changePage(recordedPage + 1)"
+          type="button"
+        >
+          下一页 ›
+        </button>
       </div>
     </main>
 
@@ -546,6 +640,42 @@ function goBack() {
   font-size: 0.9rem;
   text-align: center;
   padding: 20px;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  padding: 16px 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 24px;
+  padding-bottom: 24px;
+}
+
+.page-button {
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.15);
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.page-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-info {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.9;
 }
 
 @media (max-width: 768px) {
